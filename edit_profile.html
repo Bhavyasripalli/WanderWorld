@@ -1,0 +1,1 @@
+{% extends "social/base.html" %}{% block title %}Edit profile{% endblock %}{% block content %}<div class="auth-card"><h1>Edit your profile</h1><form method="post" enctype="multipart/form-data">{% csrf_token %}{{ form.as_p }}<button class="button">Save changes</button></form></div>{% endblock %}

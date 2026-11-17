@@ -1,0 +1,27 @@
+{% extends "social/base.html" %}
+{% block title %}WanderWorld | Your travel community{% endblock %}
+{% block content %}
+<section class="hero"><div><p class="eyebrow">YOUR NEXT ADVENTURE STARTS HERE</p><h1>Every journey has a story.</h1><p>Discover beautiful places, share your moments and connect with travellers around the world.</p><a class="button" href="{% if user.is_authenticated %}#share{% else %}{% url 'signup' %}{% endif %}">Share your story</a></div><div class="hero-art"><span>✈</span><small>Collect moments, not things.</small></div></section>
+<div class="layout">
+  <aside class="side-card"><div class="side-icon">✦</div><h3>Welcome, traveller!</h3><p>Find inspiration, meet explorers and keep your travel memories in one place.</p>{% if user.is_authenticated %}<a href="{% url 'profile' user.username %}">View your profile →</a>{% else %}<a href="{% url 'signup' %}">Create your account →</a>{% endif %}</aside>
+  <section class="feed">
+    {% if user.is_authenticated %}
+    <div class="composer" id="share"><h2>Share a travel moment</h2><form method="post" action="{% url 'create_post' %}" enctype="multipart/form-data">{% csrf_token %}{{ post_form.caption }}<div class="form-row">{{ post_form.location }}{{ post_form.image }}</div><button class="button">Publish post</button></form></div>
+    {% else %}<div class="composer"><h2>Join the journey</h2><p>Sign up to publish photos, like posts and comment on travel stories.</p><a class="button" href="{% url 'signup' %}">Join WanderWorld</a></div>{% endif %}
+    {% for post in posts %}
+    <article class="post-card">
+      <div class="post-head"><div class="avatar">{{ post.user.username|first|upper }}</div><div><a class="username" href="{% url 'profile' post.user.username %}">{{ post.user.username }}</a><div class="muted">{% if post.location %}📍 {{ post.location }} · {% endif %}{{ post.created_at|date:"M d, Y" }}</div></div></div>
+      <p class="post-caption">{{ post.caption }}</p>
+      {% if post.image %}<img class="post-image" src="{{ post.image.url }}" alt="Travel photo">{% endif %}
+      <div class="post-actions">
+        {% if user.is_authenticated %}<form method="post" action="{% url 'toggle_like' post.id %}">{% csrf_token %}<button class="action-button">{% if post.user_liked %}♥ Liked{% else %}♡ Like{% endif %} · {{ post.likes.count }}</button></form>{% else %}<span class="muted">♡ {{ post.likes.count }} likes</span>{% endif %}
+        <span class="muted">💬 {{ post.comments.count }} comments</span>
+      </div>
+      <div class="comments">{% for comment in post.comments.all %}<p><a href="{% url 'profile' comment.user.username %}">{{ comment.user.username }}</a> {{ comment.text }}</p>{% empty %}<p class="muted">Be the first to comment.</p>{% endfor %}</div>
+      {% if user.is_authenticated %}<form class="comment-form" method="post" action="{% url 'add_comment' post.id %}">{% csrf_token %}<input name="text" maxlength="500" placeholder="Write a comment..." required><button>Send</button></form>{% endif %}
+    </article>
+    {% empty %}<div class="empty-state"><div>🌍</div><h2>Your travel feed is waiting</h2><p>Be the first to share a destination or create an account to get started.</p>{% if user.is_authenticated %}<a href="#share">Create your first post</a>{% else %}<a href="{% url 'signup' %}">Join WanderWorld</a>{% endif %}</div>{% endfor %}
+  </section>
+  <aside class="side-card destinations"><h3>Explore the world</h3><p>Popular ideas for your next trip</p><div class="destination">🏔️ <span><b>Mountain escapes</b><small>Find your quiet place</small></span></div><div class="destination">🏝️ <span><b>Island days</b><small>Sun, sea and stories</small></span></div><div class="destination">🏛️ <span><b>Culture trails</b><small>Explore somewhere new</small></span></div><div class="destination">🌆 <span><b>City adventures</b><small>See the world differently</small></span></div></aside>
+</div>
+{% endblock %}
